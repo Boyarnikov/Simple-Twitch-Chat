@@ -2,6 +2,11 @@ from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.type import AuthScope, ChatEvent
 from twitchAPI.chat import Chat, EventData, ChatMessage, ChatSub, ChatCommand
+from twitchAPI.eventsub.websocket import EventSubWebsocket
+from twitchAPI.eventsub.base import EventSubBase
+from twitchAPI.object.eventsub import ChannelPointsCustomRewardRedemptionAddEvent
+from twitchAPI.pubsub import PubSub
+from uuid import UUID
 
 from FlaskExample import start_app, add_message
 
@@ -12,7 +17,8 @@ import asyncio
 
 APP_ID = twitchAppId
 APP_SECRET = twitchAppToken
-USER_SCOPE = [AuthScope.CHAT_READ, AuthScope.CHAT_EDIT]
+USER_SCOPE = [AuthScope.CHAT_READ, AuthScope.CHAT_EDIT, AuthScope.CHANNEL_MANAGE_REDEMPTIONS,
+              AuthScope.CHANNEL_READ_REDEMPTIONS]
 TARGET_CHANNEL = 'iBoyar'
 
 char_history = []
@@ -45,6 +51,13 @@ async def test_command(cmd: ChatCommand):
         await cmd.reply(f'{cmd.user.name}: {cmd.parameter}')
 
 
+async def on_follow(uuid, data):
+    print(data["data"]['redemption']['user']['login'],
+          data["data"]['redemption']['reward']['title'],
+          data["data"]['redemption']['user_input'])
+    print("=" * 20)
+
+
 # this is where we set up the bot
 async def run():
     # set up twitch api instance and add user authentication with some scopes
@@ -53,8 +66,16 @@ async def run():
     token, refresh_token = await auth.authenticate()
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
 
+    user_id = "0"
+    async for i in twitch.get_users(logins=['iboyar']):
+        user_id = i.id
+
     # create chat instance
     chat = await Chat(twitch)
+
+    pubsub = PubSub(twitch)
+    await pubsub.listen_channel_points(user_id, on_follow)
+    pubsub.start()
 
     # register the handlers for the events you want
 
@@ -62,13 +83,13 @@ async def run():
     chat.register_event(ChatEvent.READY, on_ready)
     # listen to chat messages
     chat.register_event(ChatEvent.MESSAGE, on_message)
+
     # listen to channel subscriptions
     chat.register_event(ChatEvent.SUB, on_sub)
     # there are more events, you can view them all in this documentation
 
     # you can directly register commands and their handlers, this will register the !reply command
     chat.register_command('reply', test_command)
-
 
     # we are done with our setup, lets start this bot up!
     print("START CHAT")
@@ -79,12 +100,13 @@ async def run():
 
     # lets run till we press enter in the console
     try:
-        input('press ENTER to stop\\n')
+        input('press ENTER to stop\n')
     finally:
         # now we can close the chat bot and the twitch api client
         chat.stop()
         await twitch.close()
 
 
-# lets run our setup
-asyncio.run(run())
+if __name__ == "__main__":
+    # lets run our setup
+    asyncio.run(run())

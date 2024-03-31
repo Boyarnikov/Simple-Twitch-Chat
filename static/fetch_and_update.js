@@ -2,11 +2,12 @@ const message = 'Hello' // Try edit me
 var this_data = ""
 var timing = 1
 
-function applyTypingEffect(element) {
+async function applyTypingEffect(element) {
   const words = element.innerText.split(' '); // Split text into words
   element.innerHTML = ''; // Clear the content
 
   let index = 0;
+  await new Promise(r => setTimeout(r, 200));
 
   const typingEffect = setInterval(() => {
     element.textContent += words[index] + ' '; // Display one word at a time
