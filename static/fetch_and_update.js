@@ -67,8 +67,13 @@ async function updater() {
       },
       body: data
   });
+
   let messages = await response.json();
-  addMessagesToPage(messages)
+  if (messages.reset_index != null) {
+        last_id_requested = messages.reset_index
+  }
+
+  addMessagesToPage(messages.data)
 
 }
 

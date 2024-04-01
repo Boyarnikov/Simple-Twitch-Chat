@@ -20,11 +20,15 @@ def index():
 
 @app.route('/data', methods=['FETCH'])
 def data():
-    #print(request.json)
-    requested_messages = pending_messages[-10:]
-    if "from_id" in request.json and type(request.json["from_id"]) is int and 0 <= request.json["from_id"] < len(
-            pending_messages):
-        requested_messages = pending_messages[request.json["from_id"] + 1:]
+    answer = dict()
+    answer["data"] = pending_messages[-10:]
+    if "from_id" in request.json:
+        _index = request.json["from_id"]
+        answer["data"] = pending_messages[_index + 1:]
+        if request.json["from_id"] >= len(pending_messages):
+            answer["reset_index"] = max(len(pending_messages) - 10, -1)
+            answer["data"] = pending_messages[answer["reset_index"]:]
+
 
     """
         return [{
@@ -34,7 +38,7 @@ def data():
         } for _ in range(random.randint(1, 3))]
     """
 
-    return requested_messages
+    return answer
 
 
 def start_app():
