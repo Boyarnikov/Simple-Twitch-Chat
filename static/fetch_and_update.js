@@ -1,6 +1,7 @@
 const message = 'Hello' // Try edit me
 var this_data = ""
 var timing = 1
+var last_id_requested = -1
 
 async function applyTypingEffect(element) {
   const words = element.innerText.split(' '); // Split text into words
@@ -27,6 +28,7 @@ function addMessagesToPage(messagesData) {
   const chatContainer = document.querySelector('.chat-container');
 
   messagesData.forEach(message => {
+    last_id_requested = Math.max(last_id_requested, message.id)
     const messageElement = document.createElement('div');
     messageElement.classList.add('other-message');
 
@@ -55,7 +57,7 @@ function addMessagesToPage(messagesData) {
 
 var chat = document.getElementById("chat");
 async function updater() {
-  var data = JSON.stringify( {"test": "test"} );
+  var data = JSON.stringify( {"from_id": last_id_requested} );
   console.log(data)
 
   let response = await fetch('/data', {

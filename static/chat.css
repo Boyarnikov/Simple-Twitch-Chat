@@ -49,6 +49,7 @@
   white-space: normal; /* Allow wrapping within the message content */
   overflow: hidden; /* Hide any content that overflows */
   animation: typing 2s steps(40, end) forwards;
+  font-weight: bold;
 }
 
 .other-message .username {

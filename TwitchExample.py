@@ -2,13 +2,10 @@ from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.type import AuthScope, ChatEvent
 from twitchAPI.chat import Chat, EventData, ChatMessage, ChatSub, ChatCommand
-from twitchAPI.eventsub.websocket import EventSubWebsocket
-from twitchAPI.eventsub.base import EventSubBase
-from twitchAPI.object.eventsub import ChannelPointsCustomRewardRedemptionAddEvent
 from twitchAPI.pubsub import PubSub
-from uuid import UUID
 
 from FlaskExample import start_app, add_message
+from SimpleTTSThread import queue_say
 
 import time
 
@@ -32,6 +29,7 @@ async def on_ready(ready_event: EventData):
 # this will be called whenever a message in a channel was send by either the bot OR another user
 async def on_message(msg: ChatMessage):
     print(msg.user.name, msg.text)
+    print(msg.emotes)
     add_message(msg.user.name, msg.text)
     print(f'in {msg.room.name}, {msg.user.name} said: {msg.text}')
 
@@ -51,11 +49,11 @@ async def test_command(cmd: ChatCommand):
         await cmd.reply(f'{cmd.user.name}: {cmd.parameter}')
 
 
-async def on_follow(uuid, data):
-    print(data["data"]['redemption']['user']['login'],
-          data["data"]['redemption']['reward']['title'],
-          data["data"]['redemption']['user_input'])
-    print("=" * 20)
+async def on_redemption(uuid, data):
+    if data["data"]['redemption']['reward']['title'] == "TTS":
+        name = data["data"]['redemption']['user']['login']
+        text = data["data"]['redemption']['user_input']
+        queue_say(name + " сказал, " + text)
 
 
 # this is where we set up the bot
@@ -74,7 +72,7 @@ async def run():
     chat = await Chat(twitch)
 
     pubsub = PubSub(twitch)
-    await pubsub.listen_channel_points(user_id, on_follow)
+    await pubsub.listen_channel_points(user_id, on_redemption)
     pubsub.start()
 
     # register the handlers for the events you want
@@ -96,11 +94,10 @@ async def run():
 
     chat.start()
     print("START FLASK")
-    start_app()
 
     # lets run till we press enter in the console
     try:
-        input('press ENTER to stop\n')
+        start_app()
     finally:
         # now we can close the chat bot and the twitch api client
         chat.stop()

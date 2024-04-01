@@ -5,6 +5,7 @@ from queue import Queue
 
 lines = Queue()
 
+
 def thread_voice(_lines: Queue):
     while True:
         if _lines.empty():
@@ -18,12 +19,9 @@ def thread_voice(_lines: Queue):
         engine.stop()
         print(f"done saying {text}")
 
+
 threading.Thread(target=thread_voice, args=(lines,), daemon=True).start()
 
-lines.put("Hello!")
-lines.put("hi!")
-lines.put("how it's going!")
-time.sleep(4)
-lines.put("я так больше не могу")
 
-input()
+def queue_say(text):
+    lines.put(text)
