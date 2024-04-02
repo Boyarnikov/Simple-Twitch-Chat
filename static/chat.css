@@ -16,7 +16,7 @@
 
 .chat-container {
   flex-direction: column-reverse;
-  font-size: 1.2rem;
+  font-size: 2.0rem;
   height: 100vh; /* Set height to 100% of viewport height */
   width: 100vw;
   position: fixed; /* Position the container fixed on the viewport */
@@ -71,7 +71,30 @@
 
 
 .message-timestamp {
-  font-size: 12px;
+  font-size: 1.2rem;
   color: #00ff00;
   margin-top: 2px;
+  margin-right: 20px;
+}
+
+.emoji-container {
+  display: inline;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.emoji-thumbnail {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  margin-right: 5px;
+  position: relative;
+  top: 3px;
+  left: 0px;
+  animation: slideIn 0.5s;
+}
+
+.emoji-number {
+  font-weight: bold;
+  font-size: 2.0rem;
 }

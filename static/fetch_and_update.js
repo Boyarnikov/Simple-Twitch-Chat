@@ -24,6 +24,24 @@ function scrollToBottom() {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+function addEmojiToPage(url, count) {
+    const container = document.createElement('span');
+    container.classList.add('emoji-container');
+
+    const thumbnail = document.createElement('img');
+    thumbnail.src = url;
+    thumbnail.classList.add('emoji-thumbnail');
+
+    const numberSpan = document.createElement('span');
+    numberSpan.textContent = count;
+    numberSpan.classList.add('emoji-number');
+
+    container.appendChild(thumbnail);
+    container.appendChild(numberSpan);
+
+    return container;
+}
+
 function addMessagesToPage(messagesData) {
   const chatContainer = document.querySelector('.chat-container');
 
@@ -41,13 +59,24 @@ function addMessagesToPage(messagesData) {
     messageContentElement.textContent = message.text;
     applyTypingEffect(messageContentElement)
 
-    const timestampElement = document.createElement('div');
+    const timestampElement = document.createElement('span');
     timestampElement.classList.add('message-timestamp');
     timestampElement.textContent = message.time;
 
+    const emotes = document.createElement('span');
+    emotes.classList.add('message-emotes');
+    emotes.textContent = "meme";
+    console.log(message.emotes)
+
+
     messageElement.appendChild(usernameElement);
     messageElement.appendChild(messageContentElement);
+    messageElement.appendChild(document.createElement('br'));
     messageElement.appendChild(timestampElement);
+
+    for (var key of Object.keys(message.emotes)) {
+        messageElement.appendChild(addEmojiToPage('/get_image/' + key, message.emotes[key]));
+    }
 
     chatContainer.appendChild(messageElement);
   });
