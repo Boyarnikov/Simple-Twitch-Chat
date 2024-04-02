@@ -3,6 +3,8 @@ from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.type import AuthScope, ChatEvent
 from twitchAPI.chat import Chat, EventData, ChatMessage, ChatSub, ChatCommand
 from twitchAPI.pubsub import PubSub
+import urllib.request as req
+import os
 
 from FlaskExample import start_app, add_message
 from SimpleTTSThread import queue_say
@@ -19,10 +21,16 @@ USER_SCOPE = [AuthScope.CHAT_READ, AuthScope.CHAT_EDIT, AuthScope.CHANNEL_MANAGE
 TARGET_CHANNEL = 'iBoyar'
 
 char_history = []
-
+START_EMOTE_API_STRING = "https://static-cdn.jtvnw.net/emoticons/v2/"
+END_EMOTE_API_STRING = "/static/light/3.0"
 
 async def on_ready(ready_event: EventData):
     print('Bot is ready for work, joining channels')
+    if not os.path.exists('./emotes'):
+        os.makedirs('./emotes')
+    res = await twitch.get_global_emotes()
+    images_urls = {i.to_dict()["id"]: i.to_dict()['images']['url_4x'] for i in res.data}
+    print(images_urls)
     await ready_event.chat.join_room(TARGET_CHANNEL)
 
 
@@ -30,7 +38,25 @@ async def on_ready(ready_event: EventData):
 async def on_message(msg: ChatMessage):
     print(msg.user.name, msg.text)
     print(msg.emotes)
-    add_message(msg.user.name, msg.text)
+    plain_text = msg.text
+    if msg.emotes:
+        intervals = []
+        for e in msg.emotes:
+            intervals.extend([(int(i["start_position"]), int(i["end_position"])) for i in msg.emotes[e]])
+            print(START_EMOTE_API_STRING + e + END_EMOTE_API_STRING)
+            if not os.path.exists("./emotes/" + e + ".png"):
+                print(f"downloading {e}")
+                req.urlretrieve(START_EMOTE_API_STRING + e + END_EMOTE_API_STRING, './emotes/' + e + '.png')
+        intervals.sort()
+        plain_text = ""
+        left = 0
+        for i in intervals:
+            plain_text += msg.text[left:i[0]]
+            left = i[1] + 1
+        plain_text += msg.text[left:]
+        msg.text = plain_text
+
+    add_message(msg.user.name, msg.text, {e: len(msg.emotes[e]) for e in msg.emotes} if msg.emotes else [])
     print(f'in {msg.room.name}, {msg.user.name} said: {msg.text}')
 
 
@@ -56,10 +82,15 @@ async def on_redemption(uuid, data):
         queue_say(name + " сказал, " + text)
 
 
+twitch: Twitch
+
+
 # this is where we set up the bot
 async def run():
     # set up twitch api instance and add user authentication with some scopes
+    global twitch
     twitch = await Twitch(APP_ID, APP_SECRET)
+
     auth = UserAuthenticator(twitch, USER_SCOPE)
     token, refresh_token = await auth.authenticate()
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
