@@ -24,6 +24,7 @@ char_history = []
 START_EMOTE_API_STRING = "https://static-cdn.jtvnw.net/emoticons/v2/"
 END_EMOTE_API_STRING = "/static/light/3.0"
 
+
 async def on_ready(ready_event: EventData):
     print('Bot is ready for work, joining channels')
     if not os.path.exists('./emotes'):
@@ -133,6 +134,10 @@ async def run():
         # now we can close the chat bot and the twitch api client
         chat.stop()
         await twitch.close()
+
+
+def start():
+    asyncio.run(run())
 
 
 if __name__ == "__main__":
