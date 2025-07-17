@@ -1,4 +1,0 @@
-requests~=2.31.0
-flask~=3.0.2
-twitchAPI~=4.2.0
-pyttsx4~=3.0.15
