@@ -1,0 +1,54 @@
+body {
+    margin: 0;
+    background: transparent;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    color: red;
+}
+
+.chat-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.chat-container::-webkit-scrollbar {
+    display: none;
+}
+
+.message {
+    padding: 4px 8px;
+    margin: 2px 0;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+    text-shadow:
+        -2px -2px 3px #000,
+         2px -2px 3px #000,
+        -2px  2px 3px #000,
+         2px  2px 3px #000;
+    line-height: 1.2;
+    opacity: 1;
+    animation: fadeIn 0.3s, fadeOut 1s 10s forwards;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
